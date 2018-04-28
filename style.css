@@ -135,6 +135,12 @@ html, body {
     flex-direction: column;
 }
 
+.sp-button-holder {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+}
+
 .sp-button {
     color: var(--white);
     background: var(--color-user);
@@ -146,6 +152,9 @@ html, body {
 } .sp-button:hover {
     background: var(--color-user);
     box-shadow: 0 0 0 3px var(--shell-background), 0 0 0 5px var(--color-user);
+} .sp-button.skip{
+    color: lightslategray;
+    background: whitesmoke;
 }
 
 

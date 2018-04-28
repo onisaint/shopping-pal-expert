@@ -8,9 +8,12 @@
         name: ""
     }
 
+    const NONE = "none"
+
     const
         $eleInfo = document.getElementById("i-sp-info"),
         $eleAnswerBtn = document.getElementById("i-sp-button"),
+        $eleSkipBtn = document.getElementById("i-sp-button-skip"),
         // ele Validate objects
         $eleAnswerInput = document.getElementById("i-sp-answer"),
         $eleEntityInput = document.getElementById("i-sp-entity"),
@@ -82,13 +85,13 @@
         function ($event) {
             const
                 // @ts-ignore
-                answer = $eleAnswerInput.value,
+                answer = $eleAnswerInput.value || "",
                 // @ts-ignore
                 entity = $eleEntityInput.value,
                 // @ts-ignore
                 intent = $eleIntentInput.value;
 
-            if (!answer || !entity || !intent || !!intent.match(" ")) {
+            if (!entity || !intent || !!intent.match(" ")) {
                 $eleInfo.innerText = "Please Fill In all Details!";
                 if (!!intent.match(" ")) {
                     $eleIntentInput.classList.add("sp-is-err");
@@ -137,35 +140,73 @@
         }
     )
 
-    /**
-     * @method GET
-     * @description Does a GET request on url
-     * @param {String} url 
-     * @returns {Object} json Data output
-     */
-    function _getData(url) {
-        return fetch(url, {
-            method: 'GET'
-        })
-            .then(function (response) {
-                return response.json();
-            })
-    }
+    $eleSkipBtn.addEventListener(
+        "click",
+        function ($event) {
+            $eleAnswerBtn.setAttribute("disabled", "true");
+            _postData(
+                `${ApiEndPoint}/queryExpert/answerDetails`,
+                {
+                    "question_id": question.id,
+                    "question_text": question.text,
+                    "product_name": question.name,
+                    "answer_text": NONE,
+                    "intent": NONE,
+                    "entities": NONE
+                }
+            )
+                .then(function (data) {
+                    // TODO: revert button to prestine and set the loader screen;
+                    $eleAnswerBtn.removeAttribute("disabled");
+                    // @ts-ignore reset works with ed-chrome-wv-55 and above
+                    $eleForm.reset();
 
-    /**
-     * @method POST
-     * @description Does a post request on the url with data
-     * @param {String} url 
-     * @param {Object} data
-     * @returns {Object} json Data output
-     */
-    function _postData(url, data) {
-        return fetch(url, {
-            body: JSON.stringify(data),
-            method: 'POST'
+                    $eleQuestionScreen.classList.add("hidden");
+                    $eleLoadScreen.classList.remove("hidden");
+
+                    $eleLoaderText.innerText = "ok next time for sure!"
+                    $eleSpLoading.classList.add("hidden");
+                    $eleThanks.classList.remove("hidden");
+
+                    setTimeout(function () {
+                        $eleLoaderText.innerText = "Waiting for the customer query."
+                        $eleSpLoading.classList.remove("hidden");
+                        $eleThanks.classList.add("hidden");
+                        startFetchQuestionInterval();
+                    }, 1500)
+                })
         })
-            .then(function (response) {
-                return response.text();
-            })
-    }
-})()
+
+
+/**
+ * @method GET
+ * @description Does a GET request on url
+ * @param {String} url 
+ * @returns {Object} json Data output
+ */
+function _getData(url) {
+    return fetch(url, {
+        method: 'GET'
+    })
+        .then(function (response) {
+            return response.json();
+        })
+}
+
+/**
+ * @method POST
+ * @description Does a post request on the url with data
+ * @param {String} url 
+ * @param {Object} data
+ * @returns {Object} json Data output
+ */
+function _postData(url, data) {
+    return fetch(url, {
+        body: JSON.stringify(data),
+        method: 'POST'
+    })
+        .then(function (response) {
+            return response.text();
+        })
+}
+}) ()
